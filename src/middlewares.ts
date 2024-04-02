@@ -1,19 +1,23 @@
+import jwt from 'jsonwebtoken';
 import {NextFunction, Request, Response} from 'express';
-import imageFromWikipedia from './functions/imageFromWikipedia';
-import ErrorResponse from './interfaces/ErrorResponse';
-import CustomError from './classes/CustomError';
 
-const notFound = (req: Request, res: Response, next: NextFunction) => {
+import CustomError from './classes/CustomError';
+import {ErrorResponse} from './types/MessageTypes';
+import {Species, UserWithoutPassword} from './types/DBTypes';
+import fetchData from './lib/fetchData';
+import {ImageFromWikipedia} from './types/ImageFromWikipedia';
+
+const notFound = (req: Request, _res: Response, next: NextFunction) => {
   const error = new CustomError(`🔍 - Not Found - ${req.originalUrl}`, 404);
   next(error);
 };
 
 const errorHandler = (
   err: CustomError,
-  req: Request,
+  _req: Request,
   res: Response<ErrorResponse>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // console.log(err);
   const statusCode = err.status !== 200 ? err.status || 500 : 500;
@@ -23,19 +27,59 @@ const errorHandler = (
   });
 };
 
-const getWikiImage = async (
-  req: Request,
+const imageFromWikipedia = async (
+  req: Request<{}, {}, Omit<Species, 'species_id'>>,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
-    const {species_name} = req.body;
-    const image = await imageFromWikipedia(species_name);
-    req.body.image = image;
+    const name = req.body.species_name;
+    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&titles=${name}&pithumbsize=640&formatversion=2`;
+    const imageData = await fetchData<ImageFromWikipedia>(url);
+    const thumbnail = imageData.query.pages[0].thumbnail.source;
+    req.body.image = thumbnail;
     next();
   } catch (error) {
-    next(error);
+    next(new CustomError('Error fetching image from Wikipedia', 500));
   }
 };
 
-export {notFound, errorHandler, getWikiImage};
+const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      next(new CustomError('No auth header provided', 401));
+      return;
+    }
+    // we are using a bearer token
+    const token = authHeader.split(' ')[1];
+
+    if (!token) {
+      next(new CustomError('No token provided', 401));
+      return;
+    }
+
+    if (!process.env.JWT_SECRET) {
+      next(new CustomError('JWT secret not set', 500));
+      return;
+    }
+
+    const tokenContent = jwt.verify(
+      token,
+      process.env.JWT_SECRET,
+    ) as UserWithoutPassword;
+    // optionally check if the user is still in the database
+
+    res.locals.user = tokenContent;
+
+    next();
+  } catch (error) {
+    next(new CustomError('Not authorized', 401));
+  }
+};
+
+export {notFound, errorHandler, imageFromWikipedia, authenticate};
