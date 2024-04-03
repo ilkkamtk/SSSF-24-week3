@@ -17,6 +17,14 @@ export default {
       );
     },
   },
+  Query: {
+    categories: async () => {
+      return await categoryModel.find();
+    },
+    category: async (_parent: undefined, args: {id: string}) => {
+      return await categoryModel.findById(args.id);
+    },
+  },
   Mutation: {
     addCategory: (
       _parent: undefined,
