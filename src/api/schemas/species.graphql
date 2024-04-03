@@ -22,14 +22,14 @@ type Query {
 
 input SpeciesInput {
   species_name: String!
-  category_id: ID!
+  category: ID!
   image: String!
   location: PointInput!
 }
 
 input SpeciesModifyInput {
   species_name: String
-  category_id: ID
+  category: ID
   image: String
   location: PointInput
 }
