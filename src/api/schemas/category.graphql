@@ -9,6 +9,10 @@ type Query {
 }
 
 input CategoryInput {
+  category_name: String!
+}
+
+input CategoryModifyInput {
   category_name: String
 }
 
@@ -19,6 +23,6 @@ type CategoryMessage {
 
 type Mutation {
   addCategory(category: CategoryInput!): CategoryMessage
-  modifyCategory(category: CategoryInput!, id: ID!): CategoryMessage
+  modifyCategory(category: CategoryModifyInput!, id: ID!): CategoryMessage
   deleteCategory(id: ID!): CategoryMessage
 }
