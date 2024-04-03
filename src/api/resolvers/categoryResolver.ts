@@ -33,5 +33,19 @@ export default {
       const newCategory = new categoryModel(args.category);
       return newCategory.save();
     },
+    modifyCategory: async (
+      _parent: undefined,
+      args: {category: Omit<Category, '_id'>; id: string},
+    ): Promise<{message: string; category?: Category}> => {
+      const category = await categoryModel.findByIdAndUpdate(
+        args.id,
+        args.category,
+      );
+      if (category) {
+        return {message: 'Category updated', category};
+      } else {
+        return {message: 'Category not updated'};
+      }
+    },
   },
 };
