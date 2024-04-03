@@ -18,18 +18,25 @@ export default {
     },
   },
   Query: {
-    categories: async () => {
+    categories: async (): Promise<Category[]> => {
       return await categoryModel.find();
     },
-    category: async (_parent: undefined, args: {id: string}) => {
-      return await categoryModel.findById(args.id);
+    category: async (
+      _parent: undefined,
+      args: {id: string},
+    ): Promise<Category> => {
+      const category = await categoryModel.findById(args.id);
+      if (!category) {
+        throw new Error('Category not found');
+      }
+      return category;
     },
   },
   Mutation: {
     addCategory: async (
       _parent: undefined,
       args: {category: Omit<Category, '_id'>},
-    ) => {
+    ): Promise<{message: string; category?: Category}> => {
       const category = await categoryModel.create(args.category);
       if (category) {
         return {message: 'Category added', category};
@@ -52,7 +59,10 @@ export default {
         return {message: 'Category not updated'};
       }
     },
-    deleteCategory: async (_parent: undefined, args: {id: string}) => {
+    deleteCategory: async (
+      _parent: undefined,
+      args: {id: string},
+    ): Promise<{message: string; category?: Category}> => {
       const category = await categoryModel.findByIdAndDelete(args.id);
       if (category) {
         return {message: 'Category deleted', category};
