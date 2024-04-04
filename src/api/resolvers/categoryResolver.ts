@@ -10,7 +10,6 @@ export default {
         throw new GraphQLError('Category not found', {
           extensions: {
             code: 'NOT_FOUND',
-            http: {status: 404},
           },
         });
       }

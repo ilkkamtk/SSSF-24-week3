@@ -13,7 +13,6 @@ export default {
         throw new GraphQLError('Animal not found', {
           extensions: {
             code: 'NOT_FOUND',
-            http: {status: 404},
           },
         });
       }
