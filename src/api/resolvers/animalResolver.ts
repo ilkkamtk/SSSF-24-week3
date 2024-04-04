@@ -1,3 +1,4 @@
+import {GraphQLError} from 'graphql';
 import {Animal} from '../../types/DBTypes';
 import animalModel from '../models/animalModel';
 
@@ -9,7 +10,12 @@ export default {
     animal: async (_parent: undefined, args: {id: string}): Promise<Animal> => {
       const animal = await animalModel.findById(args.id);
       if (!animal) {
-        throw new Error('Animal not found');
+        throw new GraphQLError('Animal not found', {
+          extensions: {
+            code: 'NOT_FOUND',
+            http: {status: 404},
+          },
+        });
       }
       return animal;
     },
