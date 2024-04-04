@@ -1,17 +1,54 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {Animal} from '../../types/DBTypes';
-const animalData = [
-  {
-    id: '1',
-    animal_name: 'Frank',
-    species: '1',
-  },
-];
+import animalModel from '../models/animalModel';
 
 export default {
   Query: {
-    animals: (_parent: undefined, _args: Animal) => {
-      return animalData;
+    animals: async (): Promise<Animal[]> => {
+      return await animalModel.find();
+    },
+    animal: async (_parent: undefined, args: {id: string}): Promise<Animal> => {
+      const animal = await animalModel.findById(args.id);
+      if (!animal) {
+        throw new Error('Animal not found');
+      }
+      return animal;
+    },
+  },
+  Mutation: {
+    addAnimal: async (
+      _parent: undefined,
+      args: {animal: Omit<Animal, '_id'>},
+    ): Promise<{message: string; animal?: Animal}> => {
+      const animal = await animalModel.create(args.animal);
+      if (animal) {
+        return {message: 'Animal added', animal};
+      } else {
+        return {message: 'Animal not added'};
+      }
+    },
+    modifyAnimal: async (
+      _parent: undefined,
+      args: {animal: Omit<Animal, '_id'>; id: string},
+    ): Promise<{message: string; animal?: Animal}> => {
+      const animal = await animalModel.findByIdAndUpdate(args.id, args.animal, {
+        new: true,
+      });
+      if (animal) {
+        return {message: 'Animal updated', animal};
+      } else {
+        return {message: 'Animal not updated'};
+      }
+    },
+    deleteAnimal: async (
+      _parent: undefined,
+      args: {id: string},
+    ): Promise<{message: string; animal?: Animal}> => {
+      const animal = await animalModel.findByIdAndDelete(args.id);
+      if (animal) {
+        return {message: 'Animal deleted', animal};
+      } else {
+        return {message: 'Animal not deleted'};
+      }
     },
   },
 };
