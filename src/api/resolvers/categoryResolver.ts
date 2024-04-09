@@ -36,6 +36,7 @@ export default {
       _parent: undefined,
       args: {category: Omit<Category, '_id'>},
     ): Promise<{message: string; category?: Category}> => {
+      console.log('first');
       const category = await categoryModel.create(args.category);
       if (category) {
         return {message: 'Category added', category};

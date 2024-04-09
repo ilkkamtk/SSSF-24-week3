@@ -1,63 +1,74 @@
 /* eslint-disable node/no-unpublished-import */
 import request from 'supertest';
-import {TestCategory} from '../src/interfaces/Category';
+import {Category} from '../src/types/DBTypes';
+import {App} from 'supertest/types';
 
 const postCategory = async (
-  url: string | Function,
-  newCategory: TestCategory
-): Promise<TestCategory> => {
+  url: App,
+  newCategory: Partial<Category>,
+): Promise<{message: string; category?: Category}> => {
   return new Promise((resolve, reject) => {
     request(url)
       .post('/graphql')
       .set('Content-type', 'application/json')
       .send({
-        query: `mutation Mutation($categoryName: String!) {
-          addCategory(category_name: $categoryName) {
-            category_name
-            id
+        query: `mutation AddCategory($category: CategoryInput!) {
+          addCategory(category: $category) {
+            category {
+              id
+              category_name
+            }
+            message
           }
         }`,
         variables: {
-          categoryName: newCategory.category_name,
+          category: {
+            category_name: newCategory.category_name,
+          },
         },
       })
       .expect(200, (err, response) => {
         if (err) {
           reject(err);
         } else {
-          const category = response.body.data.addCategory as TestCategory;
-          expect(category.category_name).toBe(newCategory.category_name);
-          resolve(category);
+          console.log('asdf', response.body);
+          const categoryResponse = response.body.data.addCategory as {
+            message: string;
+            category?: Category;
+          };
+          console.log('asdf', categoryResponse);
+          expect(categoryResponse.category?.category_name).toBe(
+            newCategory.category_name,
+          );
+          resolve(categoryResponse);
         }
       });
   });
 };
 
-const getCategoryById = async (
-  url: string | Function,
-  id: string
-): Promise<TestCategory> => {
+const getCategoryById = async (url: App, id: string): Promise<Category> => {
   return new Promise((resolve, reject) => {
     request(url)
       .post('/graphql')
       .set('Content-type', 'application/json')
       .send({
-        query: `query CategoryById($categoryByIdId: ID!) {
-          categoryById(id: $categoryByIdId) {
-            category_name
+        query: `query GetCategory($id: ID!) {
+          getCategoryById(id: $id) {
             id
+            category_name
           }
         }`,
         variables: {
-          categoryByIdId: id,
+          categoryId: id,
         },
       })
       .expect(200, (err, response) => {
         if (err) {
           reject(err);
         } else {
-          const category = response.body.data.categoryById as TestCategory;
-          expect(category.id).toBe(id);
+          console.log(response.body);
+          const category = response.body.data.getCategoryById as Category;
+          expect(category._id).toBe(id);
           resolve(category);
         }
       });
