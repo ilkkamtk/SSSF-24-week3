@@ -6,18 +6,17 @@ const fetchData = async <T>(
 ): Promise<T> => {
   try {
     const response = await fetch(url, options);
-
+    const json = await response.json();
     if (!response.ok) {
-      throw new GraphQLError('Error fetching data', {
+      throw new GraphQLError(json.message, {
         extensions: {
           code: response.statusText,
         },
       });
     }
-
-    return await response.json();
+    return json;
   } catch (error) {
-    throw new GraphQLError('Error fetching data', {
+    throw new GraphQLError((error as GraphQLError).message, {
       extensions: {
         code:
           (error as GraphQLError).extensions?.code || 'INTERNAL_SERVER_ERROR',
