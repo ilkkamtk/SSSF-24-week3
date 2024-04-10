@@ -1,6 +1,7 @@
 import {GraphQLError} from 'graphql';
 import {Animal} from '../../types/DBTypes';
 import animalModel from '../models/animalModel';
+import {MyContext} from '../../types/MyContext';
 
 export default {
   Query: {
@@ -23,7 +24,15 @@ export default {
     addAnimal: async (
       _parent: undefined,
       args: {animal: Omit<Animal, '_id'>},
+      context: MyContext,
     ): Promise<{message: string; animal?: Animal}> => {
+      if (!context.userdata) {
+        throw new GraphQLError('User not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+          },
+        });
+      }
       const animal = await animalModel.create(args.animal);
       if (animal) {
         return {message: 'Animal added', animal};
