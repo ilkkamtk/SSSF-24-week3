@@ -2,12 +2,13 @@ require('dotenv').config();
 import express, {Request, Response} from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import {notFound, errorHandler} from './middlewares';
+import {notFound, errorHandler, authenticate} from './middlewares';
 import {MessageResponse} from './types/MessageTypes';
 import {ApolloServer} from '@apollo/server';
 import {expressMiddleware} from '@apollo/server/express4';
 import typeDefs from './api/schemas/index';
 import resolvers from './api/resolvers/index';
+import {MyContext} from './types/MyContext';
 
 const app = express();
 
@@ -24,14 +25,24 @@ const app = express();
       res.send({message: 'Server is running'});
     });
 
-    const server = new ApolloServer({
+    const server = new ApolloServer<MyContext>({
       typeDefs,
       resolvers,
     });
 
     await server.start();
 
-    app.use('/graphql', cors(), express.json(), expressMiddleware(server));
+    app.use(
+      '/graphql',
+      cors(),
+      express.json(),
+      authenticate,
+      expressMiddleware(server, {
+        context: ({res}) => {
+          return res.locals.user;
+        },
+      }),
+    );
 
     app.use(notFound);
     app.use(errorHandler);
