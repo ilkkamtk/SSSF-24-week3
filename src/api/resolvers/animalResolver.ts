@@ -26,6 +26,7 @@ export default {
       args: {animal: Omit<Animal, '_id'>},
       context: MyContext,
     ): Promise<{message: string; animal?: Animal}> => {
+      console.log('context', context);
       if (!context.userdata) {
         throw new GraphQLError('User not authenticated', {
           extensions: {
@@ -33,6 +34,7 @@ export default {
           },
         });
       }
+      args.animal.owner = context.userdata._id;
       const animal = await animalModel.create(args.animal);
       if (animal) {
         return {message: 'Animal added', animal};

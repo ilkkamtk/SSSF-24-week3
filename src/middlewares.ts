@@ -6,6 +6,7 @@ import {ErrorResponse} from './types/MessageTypes';
 import {Species, UserWithoutPassword} from './types/DBTypes';
 import fetchData from './lib/fetchData';
 import {ImageFromWikipedia} from './types/ImageFromWikipedia';
+import {MyContext} from './types/MyContext';
 
 const notFound = (req: Request, _res: Response, next: NextFunction) => {
   const error = new CustomError(`🔍 - Not Found - ${req.originalUrl}`, 404);
@@ -60,6 +61,7 @@ const authenticate = async (
       res.locals.user = {};
       return next();
     }
+
     // we are using a bearer token
     const token = authHeader.split(' ')[1];
 
@@ -75,11 +77,13 @@ const authenticate = async (
 
     // optionally check if the user is still in the database
 
-    res.locals.user = tokenContent;
+    const context: MyContext = {userdata: tokenContent};
+    res.locals.user = context;
 
     next();
   } catch (error) {
-    next(new CustomError('Not authorized', 401));
+    res.locals.user = {};
+    next();
   }
 };
 

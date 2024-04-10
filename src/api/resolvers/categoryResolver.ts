@@ -1,6 +1,7 @@
 import {GraphQLError} from 'graphql';
 import {Category, Species} from '../../types/DBTypes';
 import categoryModel from '../models/categoryModel';
+import {MyContext} from '../../types/MyContext';
 
 export default {
   Species: {
@@ -35,8 +36,15 @@ export default {
     addCategory: async (
       _parent: undefined,
       args: {category: Omit<Category, '_id'>},
+      context: MyContext,
     ): Promise<{message: string; category?: Category}> => {
-      console.log('first');
+      if (!context.userdata || context.userdata.role !== 'admin') {
+        throw new GraphQLError('User not authorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
       const category = await categoryModel.create(args.category);
       if (category) {
         return {message: 'Category added', category};
