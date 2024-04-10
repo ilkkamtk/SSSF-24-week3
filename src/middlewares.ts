@@ -50,28 +50,29 @@ const authenticate = async (
   next: NextFunction,
 ) => {
   try {
+    if (!process.env.JWT_SECRET) {
+      next(new CustomError('JWT secret not set', 500));
+      return;
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      next(new CustomError('No auth header provided', 401));
-      return;
+      res.locals.user = {};
+      return next();
     }
     // we are using a bearer token
     const token = authHeader.split(' ')[1];
 
     if (!token) {
-      next(new CustomError('No token provided', 401));
-      return;
-    }
-
-    if (!process.env.JWT_SECRET) {
-      next(new CustomError('JWT secret not set', 500));
-      return;
+      res.locals.user = {};
+      return next();
     }
 
     const tokenContent = jwt.verify(
       token,
       process.env.JWT_SECRET,
     ) as UserWithoutPassword;
+
     // optionally check if the user is still in the database
 
     res.locals.user = tokenContent;

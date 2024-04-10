@@ -38,9 +38,7 @@ const app = express();
       express.json(),
       authenticate,
       expressMiddleware(server, {
-        context: ({res}) => {
-          return res.locals.user;
-        },
+        context: ({res}) => res.locals.user,
       }),
     );
 
