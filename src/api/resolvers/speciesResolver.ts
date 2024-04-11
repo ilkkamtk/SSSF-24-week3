@@ -37,7 +37,15 @@ export default {
     addSpecies: async (
       _parent: undefined,
       args: {species: Omit<Species, '_id'>},
+      context: MyContext,
     ): Promise<{message: string; species?: Species}> => {
+      if (!context.userdata || context.userdata.role !== 'admin') {
+        throw new GraphQLError('User not authorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
       try {
         const species = await speciesModel.create(args.species);
         if (!species) {
@@ -55,7 +63,15 @@ export default {
     modifySpecies: async (
       _parent: undefined,
       args: {species: Omit<Species, '_id'>; id: string},
+      context: MyContext,
     ): Promise<{message: string; species?: Species}> => {
+      if (!context.userdata || context.userdata.role !== 'admin') {
+        throw new GraphQLError('User not authorized', {
+          extensions: {
+            code: 'UNAUTHORIZED',
+          },
+        });
+      }
       const species = await speciesModel.findByIdAndUpdate(
         args.id,
         args.species,

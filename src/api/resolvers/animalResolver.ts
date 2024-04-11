@@ -45,8 +45,17 @@ export default {
     modifyAnimal: async (
       _parent: undefined,
       args: {animal: Omit<Animal, '_id'>; id: string},
+      context: MyContext,
     ): Promise<{message: string; animal?: Animal}> => {
-      const animal = await animalModel.findByIdAndUpdate(args.id, args.animal, {
+      if (!context.userdata) {
+        throw new GraphQLError('User not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+          },
+        });
+      }
+      const filter = {_id: args.id, owner: context.userdata._id};
+      const animal = await animalModel.findOneAndUpdate(filter, args.animal, {
         new: true,
       });
       if (animal) {
@@ -58,8 +67,17 @@ export default {
     deleteAnimal: async (
       _parent: undefined,
       args: {id: string},
+      context: MyContext,
     ): Promise<{message: string; animal?: Animal}> => {
-      const animal = await animalModel.findByIdAndDelete(args.id);
+      if (!context.userdata) {
+        throw new GraphQLError('User not authenticated', {
+          extensions: {
+            code: 'UNAUTHENTICATED',
+          },
+        });
+      }
+      const filter = {_id: args.id, owner: context.userdata._id};
+      const animal = await animalModel.findOneAndDelete(filter);
       if (animal) {
         return {message: 'Animal deleted', animal};
       } else {
