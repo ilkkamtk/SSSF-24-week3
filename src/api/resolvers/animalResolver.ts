@@ -77,6 +77,9 @@ export default {
         });
       }
       const filter = {_id: args.id, owner: context.userdata._id};
+      if (context.userdata.role === 'admin') {
+        delete filter.owner;
+      }
       const animal = await animalModel.findOneAndDelete(filter);
       if (animal) {
         return {message: 'Animal deleted', animal};
