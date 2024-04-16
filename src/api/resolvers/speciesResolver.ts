@@ -3,6 +3,16 @@ import {Animal, Species} from '../../types/DBTypes';
 import speciesModel from '../models/speciesModel';
 import {MyContext} from '../../types/MyContext';
 import animalModel from '../models/animalModel';
+import {io, Socket} from 'socket.io-client';
+import {ClientToServerEvents, ServerToClientEvents} from '../../types/Socket';
+
+if (!process.env.SOCKET_URL) {
+  throw new Error('SOCKET_URL not defined');
+}
+// socket io client
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+  process.env.SOCKET_URL,
+);
 
 export default {
   Animal: {
@@ -51,6 +61,8 @@ export default {
         if (!species) {
           return {message: 'Species not added'};
         }
+
+        socket.emit('update', 'species');
         return {message: 'Species added', species};
       } catch (error) {
         throw new GraphQLError((error as Error).message, {

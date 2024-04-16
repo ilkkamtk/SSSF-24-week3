@@ -2,6 +2,16 @@ import {GraphQLError} from 'graphql';
 import {Animal} from '../../types/DBTypes';
 import animalModel from '../models/animalModel';
 import {MyContext} from '../../types/MyContext';
+import {io, Socket} from 'socket.io-client';
+import {ClientToServerEvents, ServerToClientEvents} from '../../types/Socket';
+
+if (!process.env.SOCKET_URL) {
+  throw new Error('SOCKET_URL not defined');
+}
+// socket io client
+const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+  process.env.SOCKET_URL,
+);
 
 export default {
   Query: {
@@ -37,6 +47,7 @@ export default {
       args.animal.owner = context.userdata._id;
       const animal = await animalModel.create(args.animal);
       if (animal) {
+        socket.emit('update', 'animal');
         return {message: 'Animal added', animal};
       } else {
         return {message: 'Animal not added'};
@@ -55,6 +66,9 @@ export default {
         });
       }
       const filter = {_id: args.id, owner: context.userdata._id};
+      if (context.userdata.role === 'admin') {
+        delete filter.owner;
+      }
       const animal = await animalModel.findOneAndUpdate(filter, args.animal, {
         new: true,
       });
