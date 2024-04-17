@@ -48,7 +48,7 @@ export default {
       context: MyContext,
     ) => {
       const response = {
-        message: 'User logged in',
+        message: 'Token is valid',
         user: context.userdata,
       };
       return response;
