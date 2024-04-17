@@ -2,6 +2,7 @@ import {GraphQLError} from 'graphql';
 import {Animal, User, UserWithoutPasswordRole} from '../../types/DBTypes';
 import fetchData from '../../lib/fetchData';
 import {MessageResponse} from '../../types/MessageTypes';
+import {MyContext} from '../../types/MyContext';
 
 export default {
   Animal: {
@@ -40,6 +41,17 @@ export default {
       );
       user.id = user._id;
       return user;
+    },
+    checkToken: async (
+      _parent: undefined,
+      _args: undefined,
+      context: MyContext,
+    ) => {
+      const response = {
+        message: 'User logged in',
+        user: context.userdata,
+      };
+      return response;
     },
   },
   Mutation: {
