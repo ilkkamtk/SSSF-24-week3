@@ -67,7 +67,7 @@ export default {
     },
     login: async (
       _parent: undefined,
-      args: {email: string; password: string},
+      args: {credentials: {username: string; password: string}},
     ): Promise<
       MessageResponse & {token: string; user: UserWithoutPasswordRole}
     > => {
@@ -79,7 +79,7 @@ export default {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({username: args.email, password: args.password}),
+        body: JSON.stringify(args.credentials),
       };
 
       const loginResponse = await fetchData<
