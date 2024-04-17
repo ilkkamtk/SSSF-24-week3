@@ -3,9 +3,7 @@ import {NextFunction, Request, Response} from 'express';
 
 import CustomError from './classes/CustomError';
 import {ErrorResponse} from './types/MessageTypes';
-import {Species, UserWithoutPassword} from './types/DBTypes';
-import fetchData from './lib/fetchData';
-import {ImageFromWikipedia} from './types/ImageFromWikipedia';
+import {UserWithoutPassword} from './types/DBTypes';
 import {MyContext} from './types/MyContext';
 
 const notFound = (req: Request, _res: Response, next: NextFunction) => {
@@ -26,23 +24,6 @@ const errorHandler = (
     message: err.message,
     stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
   });
-};
-
-const imageFromWikipedia = async (
-  req: Request<{}, {}, Omit<Species, 'species_id'>>,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const name = req.body.species_name;
-    const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages&titles=${name}&pithumbsize=640&formatversion=2`;
-    const imageData = await fetchData<ImageFromWikipedia>(url);
-    const thumbnail = imageData.query.pages[0].thumbnail.source;
-    req.body.image = thumbnail;
-    next();
-  } catch (error) {
-    next(new CustomError('Error fetching image from Wikipedia', 500));
-  }
 };
 
 const authenticate = async (
@@ -87,4 +68,4 @@ const authenticate = async (
   }
 };
 
-export {notFound, errorHandler, imageFromWikipedia, authenticate};
+export {notFound, errorHandler, authenticate};

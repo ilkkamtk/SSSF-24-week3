@@ -5,6 +5,7 @@ import {MyContext} from '../../types/MyContext';
 import animalModel from '../models/animalModel';
 import {io, Socket} from 'socket.io-client';
 import {ClientToServerEvents, ServerToClientEvents} from '../../types/Socket';
+import imageFromWikipedia from '../../lib/imageFromWikipedia';
 
 if (!process.env.SOCKET_URL) {
   throw new Error('SOCKET_URL not defined');
@@ -57,6 +58,8 @@ export default {
         });
       }
       try {
+        const thumbnail = await imageFromWikipedia(args.species.species_name);
+        args.species.image = thumbnail;
         const species = await speciesModel.create(args.species);
         if (!species) {
           return {message: 'Species not added'};
