@@ -1,9 +1,21 @@
 import {GraphQLError} from 'graphql';
-import {User, UserWithoutPasswordRole} from '../../types/DBTypes';
+import {Animal, User, UserWithoutPasswordRole} from '../../types/DBTypes';
 import fetchData from '../../lib/fetchData';
 import {MessageResponse} from '../../types/MessageTypes';
 
 export default {
+  Animal: {
+    owner: async (parent: Animal): Promise<UserWithoutPasswordRole> => {
+      if (!process.env.AUTH_URL) {
+        throw new GraphQLError('Auth URL not set in .env file');
+      }
+      const user = await fetchData<User>(
+        process.env.AUTH_URL + '/users/' + parent.id,
+      );
+      user.id = user._id;
+      return user;
+    },
+  },
   Query: {
     users: async (): Promise<UserWithoutPasswordRole[]> => {
       if (!process.env.AUTH_URL) {

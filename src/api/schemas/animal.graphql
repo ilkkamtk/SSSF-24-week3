@@ -6,7 +6,7 @@ type Animal {
   species: Species
   birthdate: DateTime
   gender: Gender
-  owner: ID
+  owner: User
   image: String
   location: Point
 }
