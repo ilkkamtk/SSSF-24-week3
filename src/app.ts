@@ -1,3 +1,4 @@
+import {shield} from 'graphql-shield';
 require('dotenv').config();
 import express, {Request, Response} from 'express';
 import helmet from 'helmet';
@@ -14,6 +15,8 @@ import {
   constraintDirectiveTypeDefs,
   createApollo4QueryValidationPlugin,
 } from 'graphql-constraint-directive/apollo4';
+import {createRateLimitRule} from 'graphql-rate-limit';
+import {applyMiddleware} from 'graphql-middleware';
 
 const app = express();
 
@@ -26,14 +29,29 @@ const app = express();
       }),
     );
 
+    const rateLimitRule = createRateLimitRule({
+      identifyContext: (ctx) => {
+        console.log(ctx);
+        return ctx.id;
+      },
+    });
+
+    const permissions = shield({
+      Mutation: {
+        login: rateLimitRule({window: '10s', max: 5}),
+      },
+    });
+
     app.get('/', (_req: Request, res: Response<MessageResponse>) => {
       res.send({message: 'Server is running'});
     });
 
-    const schema = makeExecutableSchema({
+    const executableSchema = makeExecutableSchema({
       typeDefs: [constraintDirectiveTypeDefs, typeDefs],
       resolvers,
     });
+
+    const schema = applyMiddleware(executableSchema, permissions);
 
     const plugins = [createApollo4QueryValidationPlugin()];
 

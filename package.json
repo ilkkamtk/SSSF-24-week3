@@ -25,6 +25,7 @@
     "geojson": "^0.5.0",
     "graphql": "^16.8.1",
     "graphql-constraint-directive": "^5.4.3",
+    "graphql-rate-limit": "^3.3.0",
     "graphql-tag": "^2.12.6",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
