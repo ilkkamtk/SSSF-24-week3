@@ -31,14 +31,15 @@ const app = express();
 
     const rateLimitRule = createRateLimitRule({
       identifyContext: (ctx) => {
-        console.log(ctx);
-        return ctx.id;
+        // console.log(ctx.id);
+        return ctx.userdata?._id ? ctx.userdata._id : ctx.id;
       },
     });
 
     const permissions = shield({
       Mutation: {
         login: rateLimitRule({window: '10s', max: 5}),
+        addAnimal: rateLimitRule({window: '10s', max: 1}),
       },
     });
 

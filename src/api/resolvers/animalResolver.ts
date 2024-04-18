@@ -36,7 +36,7 @@ export default {
       args: {animal: Omit<Animal, '_id'>},
       context: MyContext,
     ): Promise<{message: string; animal?: Animal}> => {
-      console.log('context', context);
+      // console.log('context', context);
       if (!context.userdata) {
         throw new GraphQLError('User not authenticated', {
           extensions: {

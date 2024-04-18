@@ -10,7 +10,7 @@ export default {
       if (!process.env.AUTH_URL) {
         throw new GraphQLError('Auth URL not set in .env file');
       }
-      console.log(parent);
+      // console.log(parent);
       const user = await fetchData<User>(
         process.env.AUTH_URL + '/users/' + parent.owner,
       );
