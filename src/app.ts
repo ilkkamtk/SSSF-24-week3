@@ -9,6 +9,11 @@ import {expressMiddleware} from '@apollo/server/express4';
 import typeDefs from './api/schemas/index';
 import resolvers from './api/resolvers/index';
 import {MyContext} from './types/MyContext';
+import {makeExecutableSchema} from '@graphql-tools/schema';
+import {
+  constraintDirectiveTypeDefs,
+  createApollo4QueryValidationPlugin,
+} from 'graphql-constraint-directive/apollo4';
 
 const app = express();
 
@@ -25,9 +30,16 @@ const app = express();
       res.send({message: 'Server is running'});
     });
 
-    const server = new ApolloServer<MyContext>({
-      typeDefs,
+    const schema = makeExecutableSchema({
+      typeDefs: [constraintDirectiveTypeDefs, typeDefs],
       resolvers,
+    });
+
+    const plugins = [createApollo4QueryValidationPlugin()];
+
+    const server = new ApolloServer<MyContext>({
+      schema,
+      plugins,
     });
 
     await server.start();

@@ -23,7 +23,6 @@ type Query {
 input SpeciesInput {
   species_name: String!
   category: ID!
-  image: String!
   location: PointInput!
 }
 

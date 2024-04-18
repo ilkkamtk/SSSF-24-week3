@@ -17,7 +17,7 @@ type Query {
 
 input UserInput {
   user_name: String!
-  email: String!
+  email: String! @constraint(format: "email", maxLength: 255)
   password: String!
 }
 

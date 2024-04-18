@@ -59,8 +59,10 @@ export default {
       }
       try {
         const thumbnail = await imageFromWikipedia(args.species.species_name);
+        console.log('thumb', thumbnail);
         args.species.image = thumbnail;
         const species = await speciesModel.create(args.species);
+
         if (!species) {
           return {message: 'Species not added'};
         }
